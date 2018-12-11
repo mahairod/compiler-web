@@ -9,14 +9,12 @@
  */
 package me.astafiev.web.compiler.state;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.ejb.embeddable.EJBContainer;
-import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.naming.NamingException;
 import me.astafiev.web.compiler.beans.Completion;
 import org.junit.AfterClass;
@@ -35,7 +33,7 @@ public class CompileStateTest {
 	}
 	
 	private static EJBContainer container;
-	private CompileState instance;
+	private CompileStateLocal instance;
 	
 	@BeforeClass
 	public static void setUpClass() {
@@ -49,7 +47,8 @@ public class CompileStateTest {
 	
 	@Before
 	public void setUp() throws NamingException {
-		instance =  (CompileState)container.getContext().lookup("java:global/classes/CompileState");
+		Object ejb = container.getContext().lookup("java:global/classes/CompileState");
+		instance =  (CompileStateLocal)ejb;
 	}
 
 	@Test
@@ -62,7 +61,7 @@ public class CompileStateTest {
 	@Test
 	public void testGetExecutor() throws Exception {
 		System.out.println("getExecutor");
-		ManagedExecutorService result = instance.getExecutor();
+		ExecutorService result = instance.getExecutor();
 		assertNotNull(result);
 	}
 
@@ -92,11 +91,11 @@ public class CompileStateTest {
 	@Test
 	public void testGetCompletions() throws Exception {
 		System.out.println("getCompletions");
-		String name = "Sample";
 		int row = 33;
 		int column = 19;
+		String name = "Sample";
 		saveSource(name);
-		Stream<Completion> result = instance.getCompletions(name, row, column);
+		Stream<Completion> result = instance.getCompletions(name, "", row, column);
 		assertNotNull(result);
 		List<Completion> rl = result.collect(Collectors.toList());
 		assertTrue(rl.size()> 0);
@@ -105,21 +104,21 @@ public class CompileStateTest {
 	@Test
 	public void testUpdateRow() throws Exception {
 		System.out.println("updateRow");
-		String name = "";
+		String name = "Sample";
+		saveSource(name);
 		int row = 0;
 		String value = "";
 		instance.updateRow(name, row, value);
-		fail("The test case is a prototype.");
 	}
 
 	@Test
 	public void testInsertRow() throws Exception {
 		System.out.println("insertRow");
-		String name = "";
+		String name = "Sample";
+		saveSource(name);
 		int row = 0;
 		String value = "";
 		instance.insertRow(name, row, value);
-		fail("The test case is a prototype.");
 	}
 	
 }

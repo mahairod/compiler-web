@@ -11,17 +11,21 @@
 package me.astafiev.web.services;
 
 import com.google.common.collect.Lists;
+import java.io.IOException;
 import java.util.List;
+import java.util.stream.Stream;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import me.astafiev.web.compiler.beans.Completion;
 import me.astafiev.web.compiler.beans.CompletionType;
+import me.astafiev.web.compiler.state.CompileStateLocal;
+import me.astafiev.web.compiler.state.IO;
 
 /**
  *
@@ -30,8 +34,8 @@ import me.astafiev.web.compiler.beans.CompletionType;
 @Stateless
 @Path("actions")
 public class ПримесьДействиеFacadeREST {
-	public ПримесьДействиеFacadeREST() {
-	}
+	@EJB
+	private CompileStateLocal compileState;
 
 	@GET
     @Path("{id}")
@@ -60,12 +64,27 @@ public class ПримесьДействиеFacadeREST {
 	@GET
     @Path("completions/{klass}")
     @Produces({"application/json"})
-	public List<Completion> findCompletionsJson(
+	public Stream<Completion> findCompletionsJson(
 			@PathParam("klass") String klass,
 			@QueryParam("prefix") String prefix,
 			@QueryParam("line") int line,
-			@QueryParam("col") int col) {
-		return Lists.newArrayList(new Completion(CompletionType.MEMEBER, "SingleItem"));
+			@QueryParam("col") int col) throws IOException {
+		compileState.saveSource(klass, IO.readSample());
+		return compileState.getCompletions(klass, prefix, col, col);
+	}
+
+	@POST
+    @Path("initcomplete/{klass}")
+    @Produces({"application/json"})
+	public Stream<Completion> findNewCompletionsJson(
+			@PathParam("klass") String klass,
+			@QueryParam("prefix") String prefix,
+			@QueryParam("line") int line,
+			@QueryParam("col") int col,
+			String source
+			) {
+		compileState.saveSource(klass, source);
+		return compileState.getCompletions(klass, prefix, col, col);
 	}
 
 	@GET

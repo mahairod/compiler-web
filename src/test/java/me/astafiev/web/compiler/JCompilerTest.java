@@ -17,7 +17,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.enterprise.concurrent.ManagedExecutorService;
 import me.astafiev.web.compiler.beans.Completion;
 import me.astafiev.web.compiler.state.Binary;
 import me.astafiev.web.compiler.state.CompilationCtx;
@@ -67,7 +66,7 @@ public class JCompilerTest {
 		System.out.println("suggestToken");
 		int coord[] = {33, 19};
 		Source source = ctx.getSources().entrySet().iterator().next().getValue();
-		Stream<Completion> result = instance.suggestToken(source, coord[0], coord[1]);
+		Stream<Completion> result = instance.suggestToken(source, coord[0], coord[1], "");
 		assertNotNull(result);
 		List<Completion> rl = result.collect(Collectors.toList());
 		assertTrue(rl.size()> 0);

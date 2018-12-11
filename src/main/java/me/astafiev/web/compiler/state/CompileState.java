@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 import javax.annotation.Resource;
+import javax.ejb.Local;
 import javax.ejb.Stateful;
 import javax.enterprise.concurrent.ManagedExecutorService;
 import me.astafiev.web.compiler.JCompiler;
@@ -23,7 +24,7 @@ import me.astafiev.web.compiler.beans.Completion;
  * @author Антон Астафьев <anton@astafiev.me> (Anton Astafiev)
  */
 @Stateful
-public class CompileState implements CompilationCtx {
+public class CompileState implements CompileStateLocal {
 	
 	@Resource
 	private ManagedExecutorService executorService; 
@@ -47,19 +48,23 @@ public class CompileState implements CompilationCtx {
 		return binaries.put(name, binary);
 	}
 
+	@Override
 	public boolean saveSource(final String name, final String source) {
 		sources.put(name, new Source(name, source));
-		return false;
+		return true;
 	}
 
-	public Stream<Completion> getCompletions(final String name, final int row, final int column) {
-		return compiler.suggestToken(sources.get(name), row, column);
+	@Override
+	public Stream<Completion> getCompletions(final String name, String prefix, final int row, final int column) {
+		return compiler.suggestToken(sources.get(name), row, column, prefix);
 	}
 
+	@Override
 	public void updateRow(final String name, final int row, final String value) throws CompileStateException {
 		makeOp(value == null? Operation.DELETE : Operation.UPDATE, name, row, value);
 	}
 
+	@Override
 	public void insertRow(final String name, final int row, final String value) throws CompileStateException {
 		makeOp(Operation.INSERT, name, row, value);
 	}
