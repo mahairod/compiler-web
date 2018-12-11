@@ -70,7 +70,7 @@ public class ПримесьДействиеFacadeREST {
 			@QueryParam("line") int line,
 			@QueryParam("col") int col) throws IOException {
 		compileState.saveSource(klass, IO.readSample());
-		return compileState.getCompletions(klass, prefix, col, col);
+		return compileState.getCompletions(klass, prefix, line, col);
 	}
 
 	@POST

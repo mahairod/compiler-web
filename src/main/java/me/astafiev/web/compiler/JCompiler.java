@@ -10,15 +10,10 @@
 
 package me.astafiev.web.compiler;
 
-import com.sun.source.tree.Tree;
+import me.astafiev.web.compiler.isol.IsolatedCompiler;
 import com.sun.source.util.*;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.function.BiPredicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -40,21 +35,16 @@ public class JCompiler {
 	}
 
 	public Stream<Completion> suggestToken(Source source, final int row, final int column, String prefix) {
+		prefix = prefix == null ? "" : prefix;
+
 		Thread thread = Thread.currentThread();
 		ClassLoader oldCl = thread.getContextClassLoader();
 		ClassLoader localCl = getClass().getClassLoader();
 		try {
-			Class<? extends URLClassLoader> cclClass
-					= (Class<? extends URLClassLoader>) Class.forName("me.astafiev.web.compiler.CompilerClassLoader", true, localCl);
-			ClassLoader toolCl = JavacTask.class.getClassLoader();
+//			Class<? extends URLClassLoader> cclClass= (Class<? extends URLClassLoader>) Class.forName("me.astafiev.web.compiler.CompilerClassLoader", true, localCl);
+//			ClassLoader toolCl = JavacTask.class.getClassLoader();
 			URL[] urlsLocal = ((URLClassLoader)localCl).getURLs();
-			URL[] urls = urlsLocal;
-
-//			List<URL> lst = new ArrayList<>();
-//			Collections.addAll(lst, urls);
-//			Collections.addAll(lst, urlsLocal);
-//			urls = lst.toArray(urls);
-			URLClassLoader ccl = cclClass.getConstructor(ClassLoader.class, URL[].class).newInstance(localCl, urls);
+			URLClassLoader ccl = new CompilerClassLoader(localCl, urlsLocal);
 
 			thread.setContextClassLoader(ccl);
 			Object comp = ccl.loadClass(IsolatedCompiler.class.getCanonicalName()).newInstance();

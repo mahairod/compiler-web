@@ -10,6 +10,8 @@
 
 package me.astafiev.web.compiler;
 
+import me.astafiev.web.compiler.isol.CommonTreeScanner;
+import me.astafiev.web.compiler.isol.IsolatedCompiler;
 import java.net.URL;
 import java.net.URLClassLoader;
 
@@ -49,7 +51,7 @@ public class CompilerClassLoader extends URLClassLoader {
 		}
 		return name.startsWith("com.sun.")
 			||name.startsWith("sun.tools.")
-			||name.startsWith(IsolatedCompiler.class.getCanonicalName())
+			||name.startsWith(IsolatedCompiler.class.getPackage().getName())
 		;
 	}
 
