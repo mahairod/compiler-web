@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
+import org.glassfish.jersey.server.ServerProperties;
 
 /**
  *
@@ -26,6 +27,8 @@ public class RestApplication extends Application {
 	public Map<String, Object> getProperties() {
 		final Map<String, Object> properties = new HashMap<String, Object>();
 		properties.put("jersey.config.server.tracing", "ALL");
+		properties.put(ServerProperties.MOXY_JSON_FEATURE_DISABLE, true);
+		properties.put(ServerProperties.OUTBOUND_CONTENT_LENGTH_BUFFER, 128);
 		return properties;
 	}
 

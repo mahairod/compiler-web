@@ -66,10 +66,12 @@ public class StreamBodyWriter implements MessageBodyWriter {
 		writer.unblock();
 	}
 	
-	private void writeEl(Writer writer, Jsonb jb, Object el) {
+	private void writeEl(RSWriter writer, Jsonb jb, Object el) {
 		try {
+			if (writer.started()) {
+				writer.append(',');
+			}
 			jb.toJson(el, writer);
-			writer.append(',');
 			writer.flush();
 		} catch (IOException ex) {
 			Logger.getLogger(StreamBodyWriter.class.getName()).log(Level.SEVERE, null, ex);
@@ -82,6 +84,7 @@ public class StreamBodyWriter implements MessageBodyWriter {
 		}
 
 		private boolean blockClose = true;
+		private boolean firstEl = true;
 
 		@Override
 		public void close() throws IOException {
@@ -91,6 +94,13 @@ public class StreamBodyWriter implements MessageBodyWriter {
 
 		void unblock() {
 			blockClose = false;
+		}
+		boolean started() {
+			if (firstEl) {
+				firstEl = false;
+				return false;
+			}
+			return true;
 		}
 	}
 

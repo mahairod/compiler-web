@@ -11,7 +11,6 @@
 package me.astafiev.web.compiler;
 
 import me.astafiev.web.compiler.isol.IsolatedCompiler;
-import com.sun.source.util.*;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.logging.Level;
@@ -27,6 +26,7 @@ import me.astafiev.web.compiler.state.Source;
  */
 public class JCompiler {
 	private final CompilationCtx compileState;
+	private IIsolatedCompiler isoComp;
 
 	private static final Logger LOG = Logger.getLogger(JCompiler.class.getName());
 
@@ -36,29 +36,25 @@ public class JCompiler {
 
 	public Stream<Completion> suggestToken(Source source, final int row, final int column, String prefix) {
 		prefix = prefix == null ? "" : prefix;
-
-		Thread thread = Thread.currentThread();
-		ClassLoader oldCl = thread.getContextClassLoader();
-		ClassLoader localCl = getClass().getClassLoader();
 		try {
-//			Class<? extends URLClassLoader> cclClass= (Class<? extends URLClassLoader>) Class.forName("me.astafiev.web.compiler.CompilerClassLoader", true, localCl);
-//			ClassLoader toolCl = JavacTask.class.getClassLoader();
-			URL[] urlsLocal = ((URLClassLoader)localCl).getURLs();
-			URLClassLoader ccl = new CompilerClassLoader(localCl, urlsLocal);
-
-			thread.setContextClassLoader(ccl);
-			Object comp = ccl.loadClass(IsolatedCompiler.class.getCanonicalName()).newInstance();
-			IIsolatedCompiler isoComp = (IIsolatedCompiler) comp;
-			
-			return isoComp.suggestToken(compileState, source, row, column, prefix);
-//			return (Stream<Completion>) comp.getClass().getDeclaredMethods()[0].invoke(comp, compileState, source, row, column, prefix);
-			
+			return getTools().suggestToken(compileState, source, row+1, column+1, prefix);
 		} catch (ReflectiveOperationException | SecurityException ex) {
 			LOG.log(Level.SEVERE, null, ex);
 			return null;
-		} finally {
-			thread.setContextClassLoader(oldCl);
 		}
+	}
+
+	private IIsolatedCompiler getTools() throws ReflectiveOperationException {
+		if (isoComp != null) {
+			return isoComp;
+		}
+//		ClassLoader toolCl = JavacTask.class.getClassLoader();
+		ClassLoader localCl = getClass().getClassLoader();
+		URL[] urlsLocal = ((URLClassLoader)localCl).getURLs();
+		URLClassLoader ccl = new CompilerClassLoader(localCl, urlsLocal);
+		Object comp = ccl.loadClass(IsolatedCompiler.class.getCanonicalName()).newInstance();
+		isoComp = (IIsolatedCompiler) comp;
+		return isoComp;
 	}
 
 }

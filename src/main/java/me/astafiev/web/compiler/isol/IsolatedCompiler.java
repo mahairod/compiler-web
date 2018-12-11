@@ -17,6 +17,7 @@ import com.sun.source.util.JavacTask;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
+import com.sun.tools.javac.api.JavacTool;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -54,21 +55,21 @@ public class IsolatedCompiler implements IIsolatedCompiler {
 
 	private static final Completion STOP_COMPLETIONS = new Completion();
 
+	final Completer completer;
+
 	public IsolatedCompiler() {
+		completer = new Completer();
 	}
 
 	@Override
 	public Stream<Completion> suggestToken(CompilationCtx compCtx, Source source, final int row, final int column, String prefix) throws ReflectiveOperationException {
 		final CompilationCtx compileState = compCtx;
-		JavaCompiler compiler = (JavaCompiler) getClass().getClassLoader().loadClass("com.sun.tools.javac.api.JavacTool").newInstance();
-		//			JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+		JavaCompiler compiler = new JavacTool();
+//		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 		DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
 		ДиспетчерФайлов fm = new ДиспетчерФайлов(compileState, diagnostics);
 		JavaFileObject jfo = (JavaFileObject) fm.getFileForInput(StandardLocation.SOURCE_PATH, null, source.getName());
 		JavaCompiler.CompilationTask task = compiler.getTask(null, fm, diagnostics, null, null, Collections.singletonList(jfo));
-
-//		clLoaderTree(task.getClass());
-//		clLoaderTree(this.getClass());
 
 		// Here we switch to Sun-specific APIs
 		JavacTask javacTask = (JavacTask) task;
@@ -136,8 +137,8 @@ public class IsolatedCompiler implements IIsolatedCompiler {
 			}
 			switch (t.getKind()) {
 				case IDENTIFIER:
-					Stream<Completion> subres = Completer.guessCompletionsFor(javacTask, tp);
-					subres.filter((c) -> c.getValue().startsWith(prefix)).forEach((me.astafiev.web.compiler.beans.Completion c) -> supply(queue, c));
+					Stream<Completion> subres = completer.guessCompletionsFor(javacTask, tp);
+					subres.filter((c) -> c.getValue().startsWith(prefix)).forEach((Completion c) -> supply(queue, c));
 					break;
 				default:
 			}
@@ -162,38 +163,6 @@ public class IsolatedCompiler implements IIsolatedCompiler {
 		return StreamSupport.stream(spliterator, false).filter((me.astafiev.web.compiler.beans.Completion c) -> c != STOP_COMPLETIONS);
 	}
 
-	static void clLoaderTree(Class c) {
-		clLoaderTree(c.getClassLoader(), 0);
-	}
-
-	static void clLoaderTree(final ClassLoader cl, int indent) {
-		final String indStr;
-		{
-			StringBuilder sb = new StringBuilder();
-			for (int i = 0; i < indent; i++) {
-				sb.append('\t');
-			}
-			indStr = sb.toString();
-		}
-		if (cl == null) {
-			System.out.println(indStr + "<bootstrap>");
-			URL[] urls = Launcher.getBootstrapClassPath().getURLs();
-			for (URL url : urls) {
-				System.out.println(indStr + " __" + url.toString());
-			}
-			return;
-		} else {
-			System.out.println(indStr + cl.toString());
-		}
-		if (cl instanceof URLClassLoader) {
-			URLClassLoader ucl = (URLClassLoader) cl;
-			for (URL url : ucl.getURLs()) {
-				System.out.println(indStr + "___" + url.toString());
-			}
-		}
-		clLoaderTree(cl.getParent(), indent + 1);
-	}
-
 	private static void stop(BlockingQueue<Completion> queue) {
 		try {
 			queue.put(STOP_COMPLETIONS);
@@ -206,7 +175,7 @@ public class IsolatedCompiler implements IIsolatedCompiler {
 	private static void supply(BlockingQueue<Completion> queue, Completion c) {
 		try {
 			queue.put(c);
-			TimeUnit.MILLISECONDS.sleep(500);
+//			TimeUnit.MILLISECONDS.sleep(200);
 		} catch (InterruptedException ex) {
 			LOG.log(Level.SEVERE, null, ex);
 			stop(queue);
