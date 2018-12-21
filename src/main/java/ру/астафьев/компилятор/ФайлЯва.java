@@ -39,10 +39,10 @@ public class ФайлЯва extends SimpleJavaFileObject {
 
 	@Override
 	public boolean isNameCompatible(String simpleName, Kind kind) {
-        String baseName = simpleName + kind.extension;
-        return kind.equals(getKind()) && (
+		String baseName = simpleName + kind.extension;
+		return kind.equals(getKind()) && (
 				getName().equals(baseName) ||
-                getName().endsWith("/" + baseName)
+				getName().endsWith("/" + baseName)
 			);
 	}
 }

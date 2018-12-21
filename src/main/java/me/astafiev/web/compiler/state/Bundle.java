@@ -51,6 +51,10 @@ public class Bundle {
 		return lines.addAll(c);
 	}
 
+	public String get(int index) {
+		return lines.get(index-start);
+	}
+
 	public void insert(int index, String element) {
 		lines.add(index-start, element);
 	}

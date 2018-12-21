@@ -17,5 +17,6 @@ package me.astafiev.web.compiler.beans;
 public enum CompletionType {
 	KEYWORD,
 	MEMEBER,
-	CLASS
+	CLASS,
+	IDENTIFIER
 }

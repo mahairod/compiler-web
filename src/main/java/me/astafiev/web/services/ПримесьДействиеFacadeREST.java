@@ -38,21 +38,21 @@ public class ПримесьДействиеFacadeREST {
 	private CompileStateLocal compileState;
 
 	@GET
-    @Path("{id}")
-    @Produces({"application/xml", "application/json"})
+	@Path("{id}")
+	@Produces({"application/xml", "application/json"})
 	public String find(@PathParam("id") Long id) {
 		return "Probe";
 	}
 
 	@GET
-    @Produces({"application/xml", "application/json"})
+	@Produces({"application/xml", "application/json"})
 	public List<Completion> findAll() {
 		return Lists.newArrayList(new Completion(CompletionType.MEMEBER, "SingleItem"));
 	}
 
 	@GET
-    @Path("src/{klass}")
-    @Produces({"application/xml"})
+	@Path("src/{klass}")
+	@Produces({"application/xml"})
 	public List<Completion> findCompletions(
 			@PathParam("klass") String klass,
 			@QueryParam("prefix") String prefix,
@@ -62,8 +62,8 @@ public class ПримесьДействиеFacadeREST {
 	}
 
 	@GET
-    @Path("completions/{klass}")
-    @Produces({"application/json"})
+	@Path("completions/{klass}")
+	@Produces({"application/json"})
 	public Stream<Completion> findCompletionsJson(
 			@PathParam("klass") String klass,
 			@QueryParam("prefix") String prefix,
@@ -73,30 +73,30 @@ public class ПримесьДействиеFacadeREST {
 		return compileState.getCompletions(klass, prefix, line, col);
 	}
 
-	@POST
-    @Path("initcomplete/{klass}")
-    @Produces({"application/json"})
+	@GET
+	@Path("initcomplete/{klass}")
+	@Produces({"application/json"})
 	public Stream<Completion> findNewCompletionsJson(
 			@PathParam("klass") String klass,
 			@QueryParam("prefix") String prefix,
 			@QueryParam("line") int line,
 			@QueryParam("col") int col,
-			String source
+			@QueryParam("value") String source
 			) {
 		compileState.saveSource(klass, source);
-		return compileState.getCompletions(klass, prefix, col, col);
+		return compileState.getCompletions(klass, prefix, line, col);
 	}
 
 	@GET
-    @Path("{from}/{to}")
-    @Produces({"application/xml", "application/json"})
+	@Path("{from}/{to}")
+	@Produces({"application/xml", "application/json"})
 	public List<String> findRange(@PathParam("from") Integer from, @PathParam("to") Integer to) {
 		return Lists.newArrayList("SingleItem");
 	}
 
 	@GET
-    @Path("count")
-    @Produces("text/plain")
+	@Path("count")
+	@Produces("text/plain")
 	public String countREST() {
 		return "7";
 	}

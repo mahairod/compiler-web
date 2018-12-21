@@ -12,6 +12,7 @@ package ру.астафьев.компилятор;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -42,7 +43,7 @@ public class ДиспетчерФайлов implements JavaFileManager {
 
 	private final JavaFileManager fileManager;
 	private final FileStore fileStore;
-	private List<ФайлЯва> sourceFiles;
+	private List<ФайлЯва> sourceFiles = new ArrayList<>();
 
 	public ДиспетчерФайлов(FileStore fileStore, DiagnosticCollector<JavaFileObject> diagnostics) {
 		this.fileManager = ToolProvider.getSystemJavaCompiler().getStandardFileManager(diagnostics, Locale.ENGLISH, Charset.defaultCharset());

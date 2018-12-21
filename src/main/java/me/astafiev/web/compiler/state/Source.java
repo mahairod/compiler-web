@@ -63,13 +63,18 @@ public class Source {
 		wholeText = text;
 	}
 
+	public String get(int index) {
+		Bundle h = findLocation(index);
+		return h.get(index);
+	}
+
 	public void insert(int index, String line) {
 		Bundle h = findLocation(index);
 		h.insert(index, line);
 		onChanged();
 		bundles.tailSet(h, false).forEach(Bundle::increase);
 	}
-	
+
 	public String replace(int index, String line) {
 		Bundle h = findLocation(index);
 		onChanged();
@@ -83,7 +88,7 @@ public class Source {
 		onChanged();
 		return rem;
 	}
-	
+
 	private void onChanged() {
 		wholeText = null;
 		date = new Date();
